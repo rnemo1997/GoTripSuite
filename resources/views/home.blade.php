@@ -153,20 +153,38 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             @foreach([
                 ['italian-classics', __('Italian Classics'), 'Rome, Florence, Venice, Milan', 'https://images.unsplash.com/photo-1515859005217-8a1f08870f59?auto=format&fit=crop&w=600&q=80', '4 ' . __('stops') . ' · 10 ' . __('nights')],
-                ['thai-explorer', __('Thai Explorer'), 'Bangkok, Chiang Mai, Phuket', 'https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=600&q=80', '3 ' . __('stops') . ' · 9 ' . __('nights')],
+                ['thai-explorer', __('Thai Explorer'), 'Chiang Mai, Bangkok, Phuket', 'https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=600&q=80', '3 ' . __('stops') . ' · 9 ' . __('nights')],
                 ['spanish-coast', __('Spanish Coast'), 'Barcelona, Valencia, Seville', 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=600&q=80', '3 ' . __('stops') . ' · 8 ' . __('nights')],
             ] as [$slug, $title, $routeText, $img, $details])
-                <form action="{{ route('trip-builder.template', $slug) }}" method="POST">
+                <form action="{{ route('trip-builder.template', $slug) }}" method="POST" class="template-form">
                     @csrf
-                    <button type="submit" class="group relative h-64 w-full rounded-2xl overflow-hidden cursor-pointer text-left">
-                        <img src="{{ $img }}" alt="{{ $title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-5">
-                            <h3 class="text-white font-bold text-lg" style="font-family: 'Playfair Display', serif;">{{ $title }}</h3>
-                            <p class="text-white/70 text-sm mt-1">{{ $routeText }}</p>
-                            <p class="text-amber-300 text-xs font-medium mt-2">{{ $details }}</p>
+                    <input type="hidden" name="start_date" class="template-date-input">
+                    <div class="relative h-64 rounded-2xl overflow-hidden">
+                        {{-- Clickable card image --}}
+                        <button type="button" class="template-card group absolute inset-0 w-full cursor-pointer text-left">
+                            <img src="{{ $img }}" alt="{{ $title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-5">
+                                <h3 class="text-white font-bold text-lg" style="font-family: 'Playfair Display', serif;">{{ $title }}</h3>
+                                <p class="text-white/70 text-sm mt-1">{{ $routeText }}</p>
+                                <p class="text-amber-300 text-xs font-medium mt-2">{{ $details }}</p>
+                            </div>
+                        </button>
+                        {{-- Date picker overlay (hidden by default) --}}
+                        <div class="template-date-picker absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-10">
+                            <div class="bg-white rounded-xl p-5 shadow-2xl w-64 text-center" onclick="event.stopPropagation()">
+                                <h4 class="font-semibold text-stone-900 text-sm mb-1" style="font-family: 'Playfair Display', serif;">{{ $title }}</h4>
+                                <p class="text-xs text-stone-400 mb-4">{{ __('When do you want to leave?') }}</p>
+                                <input type="date" class="template-date-field w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 mb-3">
+                                <button type="submit" class="w-full bg-stone-900 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-stone-800 active:scale-[0.98] transition-all">
+                                    {{ __('Start Planning') }}
+                                </button>
+                                <button type="button" class="template-cancel w-full text-stone-400 hover:text-stone-600 text-xs mt-2 py-1 transition-colors">
+                                    {{ __('Cancel') }}
+                                </button>
+                            </div>
                         </div>
-                    </button>
+                    </div>
                 </form>
             @endforeach
         </div>
@@ -189,9 +207,38 @@
 document.addEventListener('DOMContentLoaded', function() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
+    const minDate = tomorrow.toISOString().split('T')[0];
     const el = document.getElementById('startDate');
-    el.value = tomorrow.toISOString().split('T')[0];
-    el.min = tomorrow.toISOString().split('T')[0];
+    el.value = minDate;
+    el.min = minDate;
+
+    // Template road trip cards: click → show date picker → submit
+    document.querySelectorAll('.template-form').forEach(form => {
+        const card = form.querySelector('.template-card');
+        const picker = form.querySelector('.template-date-picker');
+        const dateField = form.querySelector('.template-date-field');
+        const dateInput = form.querySelector('.template-date-input');
+        const cancel = form.querySelector('.template-cancel');
+
+        dateField.value = minDate;
+        dateField.min = minDate;
+
+        card.addEventListener('click', () => {
+            picker.classList.remove('hidden');
+        });
+
+        cancel.addEventListener('click', () => {
+            picker.classList.add('hidden');
+        });
+
+        picker.addEventListener('click', (e) => {
+            if (e.target === picker) picker.classList.add('hidden');
+        });
+
+        form.addEventListener('submit', () => {
+            dateInput.value = dateField.value;
+        });
+    });
 
     // Nav background on scroll
     const nav = document.querySelector('nav');

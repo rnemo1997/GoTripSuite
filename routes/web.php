@@ -28,6 +28,7 @@ Route::group([
     Route::post('/trip-builder/template/{slug}', [TripBuilderController::class, 'createFromTemplate'])->name('trip-builder.template');
     Route::post('/trip-builder/create', [TripBuilderController::class, 'create'])->name('trip-builder.create');
     Route::get('/trip-builder/{trip}', [TripBuilderController::class, 'show'])->name('trip-builder.show');
+    Route::put('/trip-builder/{trip}/start-date', [TripBuilderController::class, 'updateStartDate'])->name('trip-builder.update-start-date');
     Route::post('/trip-builder/{trip}/stops', [TripBuilderController::class, 'addStop'])->name('trip-builder.add-stop');
     Route::put('/trip-builder/{trip}/stops/{stop}', [TripBuilderController::class, 'updateStop'])->name('trip-builder.update-stop');
     Route::delete('/trip-builder/{trip}/stops/{stop}', [TripBuilderController::class, 'removeStop'])->name('trip-builder.remove-stop');
