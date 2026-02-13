@@ -12,7 +12,15 @@
             </a>
             <div>
                 <h1 class="font-semibold text-stone-900 leading-tight" style="font-family: 'Playfair Display', serif;">{{ $trip->name }}</h1>
-                <p class="text-xs text-stone-400 -mt-0.5">{{ $trip->adults }} {{ $trip->adults === 1 ? __('traveller') : __('travellers') }}</p>
+                <div class="flex items-center gap-2 -mt-0.5">
+                    <p class="text-xs text-stone-400">{{ $trip->adults }} {{ $trip->adults === 1 ? __('traveller') : __('travellers') }}</p>
+                    <span class="text-stone-200">·</span>
+                    <button type="button" id="startDateBtn" class="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 font-medium transition-colors">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span id="startDateDisplay"></span>
+                    </button>
+                    <input type="date" id="startDateInput" class="absolute opacity-0 w-0 h-0 pointer-events-none">
+                </div>
             </div>
         </div>
         <div class="flex items-center gap-4">
@@ -218,6 +226,53 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ─── i18n strings used in JS ───
+    // ─── START DATE ───
+    let startDate = @json($startDate);
+    const startDateBtn = document.getElementById('startDateBtn');
+    const startDateInput = document.getElementById('startDateInput');
+    const startDateDisplay = document.getElementById('startDateDisplay');
+
+    function updateStartDateDisplay() {
+        startDateDisplay.textContent = formatDate(startDate);
+    }
+    updateStartDateDisplay();
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const tomorrowDate = new Date();
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+    startDateInput.min = tomorrowDate.toISOString().split('T')[0];
+    startDateInput.value = startDate;
+
+    startDateBtn.addEventListener('click', () => {
+        startDateInput.classList.remove('opacity-0', 'w-0', 'h-0', 'pointer-events-none');
+        startDateInput.classList.add('absolute', 'z-50');
+        startDateInput.style.left = startDateBtn.offsetLeft + 'px';
+        startDateInput.style.top = (startDateBtn.offsetTop + startDateBtn.offsetHeight + 4) + 'px';
+        startDateInput.showPicker();
+    });
+
+    startDateInput.addEventListener('change', async () => {
+        startDateInput.classList.add('opacity-0', 'w-0', 'h-0', 'pointer-events-none');
+        startDateInput.classList.remove('absolute', 'z-50');
+        const newDate = startDateInput.value;
+        if (!newDate || newDate === startDate) return;
+
+        const data = await apiPut(`${localePrefix}/trip-builder/${tripId}/start-date`, { start_date: newDate });
+        if (data.success) {
+            startDate = data.start_date;
+            stops = data.stops;
+            startDateInput.value = startDate;
+            updateStartDateDisplay();
+            renderStops();
+            showToast(i18n.startDateUpdated);
+        }
+    });
+
+    startDateInput.addEventListener('blur', () => {
+        startDateInput.classList.add('opacity-0', 'w-0', 'h-0', 'pointer-events-none');
+        startDateInput.classList.remove('absolute', 'z-50');
+    });
+
     const i18n = {
         night: '{{ __('night') }}',
         nights: '{{ __('nights') }}',
@@ -259,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
         searchForACityOrDestination: '{{ __('Search for a city or destination in the bar above to start building your trip.') }}',
         found: '{{ __('found') }}',
         bookAllHotels: '{{ __('Book All Hotels') }}',
+        startDateUpdated: '{{ __('Start date updated') }}',
     };
 
     // ─── TOAST ───

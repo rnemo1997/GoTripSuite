@@ -38,8 +38,8 @@ class TripBuilderController extends Controller
             'thai-explorer' => [
                 'name' => 'Thai Explorer',
                 'stops' => [
-                    ['place_name' => 'Bangkok', 'place_id' => 'ChIJ82ENKDJgHTERIEjiXbIAAQE', 'latitude' => 13.7563, 'longitude' => 100.5018, 'nights' => 3],
                     ['place_name' => 'Chiang Mai', 'place_id' => 'ChIJAUPCGkintR4RslIeASHLBFI', 'latitude' => 18.7883, 'longitude' => 98.9853, 'nights' => 3],
+                    ['place_name' => 'Bangkok', 'place_id' => 'ChIJ82ENKDJgHTERIEjiXbIAAQE', 'latitude' => 13.7563, 'longitude' => 100.5018, 'nights' => 3],
                     ['place_name' => 'Phuket', 'place_id' => 'ChIJdZkz4E1RUDARq0NCsVMOR9I', 'latitude' => 7.8804, 'longitude' => 98.3923, 'nights' => 3],
                 ],
             ],
@@ -57,8 +57,12 @@ class TripBuilderController extends Controller
             return redirect()->route('home');
         }
 
+        $request->validate([
+            'start_date' => 'required|date|after_or_equal:today',
+        ]);
+
         $template = $templates[$slug];
-        $startDate = Carbon::tomorrow();
+        $startDate = Carbon::parse($request->start_date);
 
         $trip = Trip::create([
             'session_id' => session()->getId(),
@@ -114,8 +118,36 @@ class TripBuilderController extends Controller
     {
         $trip->load('stops');
         $liteapiEnv = config('services.liteapi.env');
+        $startDate = session('trip_start_date', $trip->stops->first()?->checkin?->format('Y-m-d') ?? now()->addDay()->format('Y-m-d'));
 
-        return view('trip-builder.show', compact('trip', 'liteapiEnv'));
+        return view('trip-builder.show', compact('trip', 'liteapiEnv', 'startDate'));
+    }
+
+    public function updateStartDate(Request $request, Trip $trip)
+    {
+        $request->validate([
+            'start_date' => 'required|date|after_or_equal:today',
+        ]);
+
+        session(['trip_start_date' => $request->start_date]);
+
+        // Recalculate all stop dates from the new start date
+        $currentDate = Carbon::parse($request->start_date);
+        foreach ($trip->stops()->orderBy('sort_order')->get() as $stop) {
+            $stop->update([
+                'checkin' => $currentDate->copy(),
+                'checkout' => $currentDate->copy()->addDays($stop->nights),
+            ]);
+            $currentDate->addDays($stop->nights);
+        }
+
+        $trip->load('stops');
+
+        return response()->json([
+            'success' => true,
+            'stops' => $trip->stops,
+            'start_date' => $request->start_date,
+        ]);
     }
 
     public function addStop(Request $request, Trip $trip)
