@@ -73,6 +73,31 @@ class LiteApiClient
         return $response->json() ?? [];
     }
 
+    public function searchRatesByLocation(
+        float $latitude,
+        float $longitude,
+        string $checkin,
+        string $checkout,
+        int $adults = 2
+    ): array {
+        $response = $this->dataClient()
+            ->post("{$this->dataBaseUrl}/hotels/rates", [
+                'occupancies' => [['adults' => $adults]],
+                'currency' => $this->currency,
+                'guestNationality' => $this->guestNationality,
+                'language' => $this->language,
+                'checkin' => $checkin,
+                'checkout' => $checkout,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'roomMapping' => true,
+                'maxRatesPerHotel' => 1,
+                'includeHotelData' => true,
+            ]);
+
+        return $response->json() ?? [];
+    }
+
     public function searchRatesByAi(
         string $aiSearch,
         string $checkin,

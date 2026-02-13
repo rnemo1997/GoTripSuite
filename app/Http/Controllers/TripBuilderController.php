@@ -256,12 +256,22 @@ class TripBuilderController extends Controller
             return response()->json(['hotels' => [], 'error' => 'Stop dates not set']);
         }
 
-        $result = $this->api->searchRatesByPlace(
-            $stop->place_id,
-            $stop->checkin->format('Y-m-d'),
-            $stop->checkout->format('Y-m-d'),
-            $trip->adults
-        );
+        if ($stop->latitude && $stop->longitude) {
+            $result = $this->api->searchRatesByLocation(
+                $stop->latitude,
+                $stop->longitude,
+                $stop->checkin->format('Y-m-d'),
+                $stop->checkout->format('Y-m-d'),
+                $trip->adults
+            );
+        } else {
+            $result = $this->api->searchRatesByPlace(
+                $stop->place_id,
+                $stop->checkin->format('Y-m-d'),
+                $stop->checkout->format('Y-m-d'),
+                $trip->adults
+            );
+        }
 
         // Normalize like SearchController does
         $hotelInfoMap = [];
