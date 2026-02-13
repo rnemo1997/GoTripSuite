@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Response;
 
@@ -10,6 +11,7 @@ class LiteApiClient
     protected string $apiKey;
     protected string $currency;
     protected string $guestNationality;
+    protected string $language;
     protected string $dataBaseUrl = 'https://api.liteapi.travel/v3.0';
     protected string $bookBaseUrl = 'https://book.liteapi.travel/v3.0';
 
@@ -18,6 +20,7 @@ class LiteApiClient
         $this->apiKey = config('services.liteapi.key');
         $this->currency = config('services.liteapi.currency');
         $this->guestNationality = config('services.liteapi.guest_nationality');
+        $this->language = App::getLocale();
     }
 
     protected function dataClient(): \Illuminate\Http\Client\PendingRequest
@@ -58,6 +61,7 @@ class LiteApiClient
                 'occupancies' => [['adults' => $adults]],
                 'currency' => $this->currency,
                 'guestNationality' => $this->guestNationality,
+                'language' => $this->language,
                 'checkin' => $checkin,
                 'checkout' => $checkout,
                 'placeId' => $placeId,
@@ -80,6 +84,7 @@ class LiteApiClient
                 'occupancies' => [['adults' => $adults]],
                 'currency' => $this->currency,
                 'guestNationality' => $this->guestNationality,
+                'language' => $this->language,
                 'checkin' => $checkin,
                 'checkout' => $checkout,
                 'maxRatesPerHotel' => 1,
@@ -103,6 +108,7 @@ class LiteApiClient
                 'occupancies' => [['adults' => $adults]],
                 'currency' => $this->currency,
                 'guestNationality' => $this->guestNationality,
+                'language' => $this->language,
                 'checkin' => $checkin,
                 'checkout' => $checkout,
                 'roomMapping' => true,
@@ -117,6 +123,7 @@ class LiteApiClient
         $response = $this->dataClient()
             ->get("{$this->dataBaseUrl}/data/hotel", [
                 'hotelId' => $hotelId,
+                'language' => $this->language,
                 'timeout' => 4,
             ]);
 
