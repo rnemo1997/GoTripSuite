@@ -19,8 +19,9 @@ class SetLocale
         if ($locale && in_array($locale, $this->supported)) {
             App::setLocale($locale);
         } else {
-            $locale = 'en';
-            App::setLocale('en');
+            // Detect browser language from Accept-Language header
+            $locale = $request->getPreferredLanguage($this->supported) ?? 'en';
+            App::setLocale($locale);
         }
 
         // Set URL defaults so route() generates correct locale prefix

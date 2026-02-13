@@ -7,7 +7,7 @@
     {{-- Top bar --}}
     <div class="bg-white border-b border-stone-200 px-4 sm:px-6 flex items-center justify-between flex-shrink-0 h-14">
         <div class="flex items-center gap-3">
-            <a href="{{ route('trip-builder.index') }}" class="text-stone-400 hover:text-stone-600 transition-colors">
+            <a href="{{ route('home') }}" class="text-stone-400 hover:text-stone-600 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             </a>
             <div>

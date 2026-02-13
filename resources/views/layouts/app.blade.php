@@ -26,8 +26,7 @@
                 </a>
                 <div class="flex items-center gap-4 sm:gap-6 text-sm">
                     <div class="hidden sm:flex items-center gap-6 @yield('nav-links-class', 'text-stone-600')">
-                        <a href="{{ route('home') }}" class="hover:text-amber-600 transition-colors">{{ __('Explore') }}</a>
-                        <a href="{{ route('trip-builder.index') }}" class="hover:text-amber-600 transition-colors">{{ __('Trip Builder') }}</a>
+                        <a href="{{ route('home') }}" class="hover:text-amber-600 transition-colors">{{ __('Plan a Trip') }}</a>
                     </div>
                     <span class="hidden sm:inline text-stone-300">|</span>
                     {{-- Language Switcher (click-based) --}}

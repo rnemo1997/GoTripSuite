@@ -20,7 +20,73 @@ class TripBuilderController extends Controller
             ->latest()
             ->first();
 
-        return view('trip-builder.index', compact('trip'));
+        return view('home', compact('trip'));
+    }
+
+    public function createFromTemplate(Request $request, string $slug)
+    {
+        $templates = [
+            'italian-classics' => [
+                'name' => 'Italian Classics',
+                'stops' => [
+                    ['place_name' => 'Rome', 'place_id' => 'ChIJ16eBGMSJJRMRGkFpq9bMkyk', 'latitude' => 41.9028, 'longitude' => 12.4964, 'nights' => 3],
+                    ['place_name' => 'Florence', 'place_id' => 'ChIJrdbSgKZWKhMRAyrH7xEB3Ek', 'latitude' => 43.7696, 'longitude' => 11.2558, 'nights' => 2],
+                    ['place_name' => 'Venice', 'place_id' => 'ChIJiT3W8dqxfkcRoGQuXEBFQSE', 'latitude' => 45.4408, 'longitude' => 12.3155, 'nights' => 2],
+                    ['place_name' => 'Milan', 'place_id' => 'ChIJ53USP0nBhkcRjQ50xhPN_zw', 'latitude' => 45.4642, 'longitude' => 9.1900, 'nights' => 3],
+                ],
+            ],
+            'thai-explorer' => [
+                'name' => 'Thai Explorer',
+                'stops' => [
+                    ['place_name' => 'Bangkok', 'place_id' => 'ChIJ82ENKDJgHTERIEjiXbIAAQE', 'latitude' => 13.7563, 'longitude' => 100.5018, 'nights' => 3],
+                    ['place_name' => 'Chiang Mai', 'place_id' => 'ChIJAUPCGkintR4RslIeASHLBFI', 'latitude' => 18.7883, 'longitude' => 98.9853, 'nights' => 3],
+                    ['place_name' => 'Phuket', 'place_id' => 'ChIJdZkz4E1RUDARq0NCsVMOR9I', 'latitude' => 7.8804, 'longitude' => 98.3923, 'nights' => 3],
+                ],
+            ],
+            'spanish-coast' => [
+                'name' => 'Spanish Coast',
+                'stops' => [
+                    ['place_name' => 'Barcelona', 'place_id' => 'ChIJ5TCOcRaYpBIRCmZHTz37sEQ', 'latitude' => 41.3874, 'longitude' => 2.1686, 'nights' => 3],
+                    ['place_name' => 'Valencia', 'place_id' => 'ChIJb7Dv8ExPYA0ROR1_HwFRo7Q', 'latitude' => 39.4699, 'longitude' => -0.3763, 'nights' => 2],
+                    ['place_name' => 'Seville', 'place_id' => 'ChIJkWK-FBFsEg0R_UACwyT0kPo', 'latitude' => 37.3891, 'longitude' => -5.9845, 'nights' => 3],
+                ],
+            ],
+        ];
+
+        if (!isset($templates[$slug])) {
+            return redirect()->route('home');
+        }
+
+        $template = $templates[$slug];
+        $startDate = Carbon::tomorrow();
+
+        $trip = Trip::create([
+            'session_id' => session()->getId(),
+            'name' => $template['name'],
+            'adults' => 2,
+            'status' => 'planning',
+            'currency' => config('services.liteapi.currency', 'USD'),
+        ]);
+
+        session(['trip_start_date' => $startDate->format('Y-m-d')]);
+
+        $currentDate = $startDate->copy();
+        foreach ($template['stops'] as $index => $stopData) {
+            TripStop::create([
+                'trip_id' => $trip->id,
+                'sort_order' => $index,
+                'place_id' => $stopData['place_id'],
+                'place_name' => $stopData['place_name'],
+                'latitude' => $stopData['latitude'],
+                'longitude' => $stopData['longitude'],
+                'checkin' => $currentDate->copy(),
+                'checkout' => $currentDate->copy()->addDays($stopData['nights']),
+                'nights' => $stopData['nights'],
+            ]);
+            $currentDate->addDays($stopData['nights']);
+        }
+
+        return redirect()->route('trip-builder.show', ['trip' => $trip]);
     }
 
     public function create(Request $request)
@@ -41,7 +107,7 @@ class TripBuilderController extends Controller
 
         session(['trip_start_date' => $request->start_date]);
 
-        return redirect()->route('trip-builder.show', $trip);
+        return redirect()->route('trip-builder.show', ['trip' => $trip]);
     }
 
     public function show(Trip $trip)

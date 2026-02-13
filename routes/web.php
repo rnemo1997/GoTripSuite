@@ -11,7 +11,7 @@ Route::group([
     'where' => ['locale' => 'nl|de|fr|es'],
 ], function () {
     // Home & Search
-    Route::get('/', [SearchController::class, 'home'])->name('home');
+    Route::get('/', [TripBuilderController::class, 'index'])->name('home');
     Route::get('/api/places', [SearchController::class, 'places'])->name('places');
     Route::post('/search', [SearchController::class, 'search'])->name('search');
 
@@ -25,7 +25,7 @@ Route::group([
     Route::get('/booking/confirm', [BookingController::class, 'confirm'])->name('booking.confirm');
 
     // Trip Builder
-    Route::get('/trip-builder', [TripBuilderController::class, 'index'])->name('trip-builder.index');
+    Route::post('/trip-builder/template/{slug}', [TripBuilderController::class, 'createFromTemplate'])->name('trip-builder.template');
     Route::post('/trip-builder/create', [TripBuilderController::class, 'create'])->name('trip-builder.create');
     Route::get('/trip-builder/{trip}', [TripBuilderController::class, 'show'])->name('trip-builder.show');
     Route::post('/trip-builder/{trip}/stops', [TripBuilderController::class, 'addStop'])->name('trip-builder.add-stop');
