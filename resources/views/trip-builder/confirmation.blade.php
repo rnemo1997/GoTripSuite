@@ -108,7 +108,7 @@
         @endif
 
         <div class="text-center pt-4">
-            <a href="{{ route('trip-builder.index') }}" class="inline-flex items-center gap-2 bg-stone-900 text-white py-3.5 px-10 rounded-xl font-semibold hover:bg-stone-800 active:scale-[0.98] transition-all">
+            <a href="{{ route('home') }}" class="inline-flex items-center gap-2 bg-stone-900 text-white py-3.5 px-10 rounded-xl font-semibold hover:bg-stone-800 active:scale-[0.98] transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 {{ __('Plan Another Trip') }}
             </a>
